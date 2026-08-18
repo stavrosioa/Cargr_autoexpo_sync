@@ -19,6 +19,7 @@ from exporter import export_to_csv, export_to_json
 from viewer_app import run_server
 from verify_all import verify_dataset
 from sync_diff import run_sync_audit
+from cargr_xml_generator import generate_cargr_xml, validate_cargr_xml
 
 def main():
     parser = argparse.ArgumentParser(
@@ -76,6 +77,16 @@ def main():
     exp_p = subparsers.add_parser("export", help="Εξαγωγή σε CSV και JSON στο database/")
     exp_p.add_argument("--format", choices=["all", "csv", "json"], default="all", help="Μορφή εξαγωγής")
 
+    # Export XML command (Car.gr format)
+    xml_p = subparsers.add_parser("export-xml", help="Δημιουργία Car.gr συμβατού XML Feed (Τοπικό Πείραμα / Dry-Run)")
+    xml_p.add_argument("--limit", type=int, default=None, help="Μέγιστος αριθμός αγγελιών (default: όλες οι 17.730)")
+    xml_p.add_argument("--max-photos", type=int, default=None, help="Όριο φωτογραφιών ανά αγγελία (π.χ. 6 για να αποφεύγονται οι κοινές φωτό μαγαζιού)")
+    xml_p.add_argument("--output", type=str, default=None, help="Διαδρομή αρχείου XML (default: database/cargr_parts_feed.xml)")
+
+    # Validate XML command
+    val_p = subparsers.add_parser("validate-xml", help="Έλεγχος εγκυρότητας XML Feed σύμφωνα με τις προδιαγραφές Car.gr & W3")
+    val_p.add_argument("--file", type=str, default=None, help="Διαδρομή αρχείου XML προς έλεγχο")
+
     # Viewer command
     view_p = subparsers.add_parser("viewer", help="Εκκίνηση Web Dashboard")
     view_p.add_argument("--port", type=int, default=8088, help="Θύρα web server (default: 8088)")
@@ -120,6 +131,17 @@ def main():
             export_to_csv()
         if args.format in ("all", "json"):
             export_to_json()
+
+    elif args.command == "export-xml":
+        generate_cargr_xml(
+            output_path=args.output,
+            limit=args.limit,
+            max_photos_per_item=args.max_photos
+        )
+
+    elif args.command == "validate-xml":
+        target = args.file or os.path.join(DB_DIR, "cargr_parts_feed.xml")
+        validate_cargr_xml(target)
 
     elif args.command == "viewer":
         run_server(port=args.port)
