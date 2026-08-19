@@ -113,14 +113,15 @@ async def db_writer_task(db_queue: asyncio.Queue, db_path: str, stop_event: asyn
 
 async def download_images_async(
     limit: Optional[int] = None,
-    concurrency: int = 25,
+    concurrency: int = 40,
     output_dir: str = DEFAULT_DATA_DIR,
     db_path: str = DB_PATH
 ):
     conn = get_connection(db_path)
     cursor = conn.cursor()
 
-    query = "SELECT id, listing_id, image_index, url_max_res FROM listing_images WHERE is_downloaded = 0"
+    # Query 100% of all pending images with zero filtering
+    query = "SELECT id, listing_id, image_index, url_max_res FROM listing_images WHERE is_downloaded = 0 ORDER BY listing_id, image_index"
     if limit:
         query += f" LIMIT {limit}"
 
@@ -129,8 +130,8 @@ async def download_images_async(
     conn.close()
 
     total_pending = len(pending_records)
-    print(f"\n🖼️ Φωτογραφίες προς λήψη (μέγιστη ανάλυση 1024x768): {total_pending:,}")
-    print(f"📁 Φάκελος αποθήκευσης (ανά αγγελία): {output_dir}/<listing_id>/")
+    print(f"\n🖼️ Συνολικές Φωτογραφίες προς λήψη (100% ΟΛΕΣ ΟΙ ΦΩΤΟΓΡΑΦΙΕΣ ΧΩΡΙΣ ΕΞΑΙΡΕΣΕΙΣ): {total_pending:,}")
+    print(f"📁 Φάκελος αποθήκευσης ανά αγγελία: {output_dir}/<listing_id>/")
     print(f"⚡ Ταυτόχρονα downloads (concurrency): {concurrency}\n")
 
     if total_pending == 0:
@@ -181,9 +182,9 @@ async def download_images_async(
     print(f"💾 Συνολικό μέγεθος στο δίσκο: {total_mb:.1f} MB ({total_gb:.2f} GB)")
     print("="*60 + "\n")
 
-def start_download(limit: Optional[int] = None, concurrency: int = 25, output_dir: str = DEFAULT_DATA_DIR):
+def start_download(limit: Optional[int] = None, concurrency: int = 40, output_dir: str = DEFAULT_DATA_DIR):
     asyncio.run(download_images_async(limit=limit, concurrency=concurrency, output_dir=output_dir))
 
 if __name__ == "__main__":
     lim = int(sys.argv[1]) if len(sys.argv) > 1 else None
-    start_download(limit=lim, concurrency=25)
+    start_download(limit=lim, concurrency=40)

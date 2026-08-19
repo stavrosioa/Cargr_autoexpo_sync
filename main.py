@@ -63,14 +63,15 @@ def main():
     subparsers.add_parser("verify", help="Έλεγχος πληρότητας & επαλήθευση ότι έχουν συλλεχθεί και οι 17.730 μοναδικές αγγελίες")
 
     # Enrich command
-    enrich_p = subparsers.add_parser("enrich", help="Αναλυτική εξαγωγή OEM κωδικών, συμβατότητας οχημάτων & keywords")
+    enrich_p = subparsers.add_parser("enrich", help="Αναλυτική εξαγωγή OEM κωδικών, συμβατότητας οχημάτων & πλήρων περιγραφών")
     enrich_p.add_argument("--limit", type=int, default=None, help="Μέγιστος αριθμός αγγελιών προς ανάλυση")
-    enrich_p.add_argument("--workers", type=int, default=10, help="Αριθμός παράλληλων συνδέσεων (default: 10)")
+    enrich_p.add_argument("--workers", type=int, default=2, help="Αριθμός παράλληλων συνδέσεων (default: 2)")
+    enrich_p.add_argument("--cooldown", type=int, default=60, help="Αρχική αναμονή σε δευτερόλεπτα για καθαρή IP (default: 60)")
 
     # Download images command
-    img_p = subparsers.add_parser("download-images", help="Λήψη φωτογραφιών μέγιστης ανάλυσης στο data/<id>/")
+    img_p = subparsers.add_parser("download-images", help="Λήψη 100% όλων των φωτογραφιών μέγιστης ανάλυσης στο data/<id>/")
     img_p.add_argument("--limit", type=int, default=None, help="Μέγιστος αριθμός φωτογραφιών για λήψη")
-    img_p.add_argument("--concurrency", type=int, default=25, help="Αριθμός ταυτόχρονων downloads (default: 25)")
+    img_p.add_argument("--concurrency", type=int, default=40, help="Αριθμός ταυτόχρονων downloads (default: 40)")
     img_p.add_argument("--output", type=str, default=DATA_DIR, help="Φάκελος προορισμού (default: data/)")
 
     # Export command
@@ -121,7 +122,7 @@ def main():
         verify_dataset()
 
     elif args.command == "enrich":
-        enrich_deep_details(limit=args.limit, workers=args.workers)
+        enrich_deep_details(limit=args.limit, workers=args.workers, cooldown_seconds=args.cooldown)
 
     elif args.command == "download-images":
         start_download(limit=args.limit, concurrency=args.concurrency, output_dir=args.output)

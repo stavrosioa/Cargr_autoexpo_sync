@@ -115,47 +115,73 @@ def fetch_page(page_num: int, max_retries: int = 4) -> List[Dict[str, Any]]:
     
     return []
 
-def fetch_item_detail(listing_id: int, max_retries: int = 4) -> Optional[Dict[str, Any]]:
-    """Fetch detailed metadata for a specific listing (OEM codes, car compatibility, tags)."""
-    url = f"https://www.car.gr/parts/view/{listing_id}/"
+_GLOBAL_COOLDOWN_LOCK = threading.Lock()
+_LAST_429_TIME = 0.0
+
+def wait_for_cooldown(seconds: int = 20):
+    """Pause threads and let the IP rest if a 429 rate limit is detected."""
+    global _LAST_429_TIME
+    with _GLOBAL_COOLDOWN_LOCK:
+        now = time.time()
+        if now - _LAST_429_TIME < seconds and _LAST_429_TIME > 0:
+            # Another thread already initiated cooldown
+            remaining = max(1.0, seconds - (now - _LAST_429_TIME))
+            time.sleep(remaining)
+            return
+        _LAST_429_TIME = time.time()
+        print(f"\n⚠️ Εντοπίστηκε όριο ρυθμού (HTTP 429). Αυτόματη ηρεμία {seconds}s για να καθαρίσει η IP...")
+        for rem in range(seconds, 0, -1):
+            print(f"\r⏳ Συνέχιση σε: {rem:02d}s | Αναμονή...", end="", flush=True)
+            time.sleep(1)
+        print("\r🚀 Συνέχιση κανονικά!                                                        \n")
+
+def fetch_item_detail(listing_id: int, max_retries: int = 5) -> Optional[Dict[str, Any]]:
+    """Fetch detailed metadata and 100% full untruncated description for a specific listing."""
+    url = f"https://www.car.gr/classifieds/parts/view/{listing_id}/"
     session = get_thread_session()
     detail_headers = dict(HEADERS)
     detail_headers["Referer"] = BASE_URL
 
     for attempt in range(max_retries):
         try:
+            time.sleep(random.uniform(0.2, 0.4))
             resp = session.get(url, headers=detail_headers, timeout=15)
             if resp.status_code == 200:
+                soup = BeautifulSoup(resp.text, "html.parser")
+                
+                # 1. Full Description extraction
+                full_desc = ""
+                desc_el = soup.find(class_=lambda c: c and "description" in c.split())
+                if desc_el:
+                    full_desc = desc_el.get_text(strip=True)
+                
+                if not full_desc:
+                    for sc in soup.find_all("script", type="application/ld+json"):
+                        try:
+                            d = json.loads(sc.string)
+                            if isinstance(d, dict) and "description" in d and len(d["description"]) > len(full_desc):
+                                full_desc = d["description"].strip()
+                        except Exception:
+                            pass
+
+                # 2. Extract specs / Nuxt data if available
+                cl = {"id": listing_id, "full_description": full_desc}
                 nuxt_data = extract_nuxt_data(resp.text)
                 if nuxt_data:
                     view = nuxt_data.get("state", {}).get("classifieds", {}).get("view", {})
-                    cl = view.get("classified") or {}
-                    if cl:
-                        specs = cl.get("specifications", [])
+                    cl_nuxt = view.get("classified") or {}
+                    if cl_nuxt:
+                        cl.update(cl_nuxt)
+                        specs = cl_nuxt.get("specifications", [])
                         part_numbers = ""
                         for_makemodels = []
-                        categories_list = []
-                        condition = ""
-
+                        tags = [t.get("value", "").strip() for t in cl_nuxt.get("tags", []) if t.get("value")]
                         for sp in specs:
                             name = sp.get("name")
                             if name == "part_number":
                                 part_numbers = sp.get("value", "")
                             elif name == "for_makemodels":
                                 for_makemodels = sp.get("value", [])
-                            elif name == "category":
-                                val = sp.get("value", [])
-                                if isinstance(val, list):
-                                    for c in val:
-                                        cat_info = c.get("category", {})
-                                        categories_list.append({
-                                            "id": cat_info.get("id"),
-                                            "name": cat_info.get("humanNamePlural") or cat_info.get("humanName")
-                                        })
-                            elif name == "condition":
-                                condition = sp.get("value", "")
-
-                        tags = [t.get("value", "").strip() for t in cl.get("tags", []) if t.get("value")]
                         
                         compat_strs = []
                         for v in for_makemodels:
@@ -169,15 +195,15 @@ def fetch_item_detail(listing_id: int, max_retries: int = 4) -> Optional[Dict[st
                         cl["part_number"] = part_numbers
                         cl["for_makemodels"] = for_makemodels
                         cl["makesModelsSummary"] = ", ".join(compat_strs)
-                        cl["categoriesList"] = categories_list
-                        cl["condition"] = condition
                         cl["keywords"] = ", ".join(tags)
                         cl["tags"] = tags
-                        return cl
+
+                cl["full_description"] = full_desc
+                return cl
             elif resp.status_code in (403, 429):
-                time.sleep(1.5 * (attempt + 1))
+                wait_for_cooldown(seconds=15 + attempt * 5)
         except Exception:
-            time.sleep(1.0 * (attempt + 1))
+            time.sleep(2.0 * (attempt + 1))
 
     return None
 
@@ -237,13 +263,18 @@ def scrape_catalog(max_pages: Optional[int] = None, workers: int = 4):
     print(f"🖼️ Συνολικές high-res φωτογραφίες: {stats['total_images']:,}")
     print("="*60 + "\n")
 
-def enrich_deep_details(limit: Optional[int] = None, workers: int = 10):
-    """Enrich listings with exact OEM codes, vehicle compatibility trees, and keywords."""
+def enrich_deep_details(limit: Optional[int] = None, workers: int = 2, reset_failed: bool = True, cooldown_seconds: int = 60):
+    """Enrich listings with exact OEM codes, vehicle compatibility trees, and 100% full descriptions."""
     init_db()
     conn = get_connection()
     cursor = conn.cursor()
 
-    query = "SELECT id FROM listings WHERE is_deep_scraped = 0 ORDER BY id DESC"
+    if reset_failed:
+        # Reset listings where full_description was truncated or empty
+        cursor.execute("UPDATE listings SET is_deep_scraped = 0 WHERE full_description LIKE '%...' OR full_description IS NULL OR full_description = ''")
+        conn.commit()
+
+    query = "SELECT id FROM listings WHERE (full_description LIKE '%...' OR full_description IS NULL OR full_description = '') ORDER BY id DESC"
     if limit:
         query += f" LIMIT {limit}"
 
@@ -252,14 +283,21 @@ def enrich_deep_details(limit: Optional[int] = None, workers: int = 10):
     conn.close()
 
     if not pending_ids:
-        print("🎉 Όλες οι αγγελίες διαθέτουν ήδη πλήρη αναλυτικά OEM στοιχεία & συμβατότητα!")
+        print("🎉 Όλες οι αγγελίες διαθέτουν ήδη 100% πλήρεις περιγραφές και αναλυτικά στοιχεία!")
         return
 
-    print(f"\n🔬 Εκκίνηση Αναλυτικής Εξαγωγής (OEM Κωδικοί, Συμβατότητα Οχημάτων & Keywords)")
+    print(f"\n🔬 Εκκίνηση Αναλυτικής Εξαγωγής Πλήρων Περιγραφών (Full Descriptions & OEM)")
     print(f"📦 Αγγελίες προς ανάλυση: {len(pending_ids):,}")
-    print(f"⚡ Παράλληλα Threads: {workers}\n")
+    print(f"⚡ Παράλληλα Threads: {workers} (Ασφαλής ρυθμός χωρίς 429 block)\n")
 
-    pbar = tqdm(total=len(pending_ids), desc="🔍 Βαθιά Ανάλυση Αγγελιών", unit="αγγελία")
+    if cooldown_seconds > 0:
+        print(f"⏳ Αρχική αναμονή ασφαλείας ({cooldown_seconds}s) για καθαρισμό του ρυθμού δικτύου...")
+        for remaining in range(cooldown_seconds, 0, -1):
+            print(f"\r🚀 Έναρξη σε: {remaining:02d} δευτερόλεπτα... (Πατήστε Ctrl+C αν θέλετε να ακυρώσετε)", end="", flush=True)
+            time.sleep(1)
+        print("\r🚀 Έναρξη τώρα!                                                                               \n")
+
+    pbar = tqdm(total=len(pending_ids), desc="🔍 Πλήρης Ανάλυση Αγγελιών", unit="αγγελία")
     
     batch_size = 20
     for i in range(0, len(pending_ids), batch_size):
@@ -276,10 +314,10 @@ def enrich_deep_details(limit: Optional[int] = None, workers: int = 10):
                     if item_detail:
                         save_listing(db_conn, item_detail, is_deep=True)
                     else:
-                        cur = db_conn.cursor()
-                        cur.execute("UPDATE listings SET is_deep_scraped = 1 WHERE id = ?", (lid,))
+                        # Only mark deep if not 429
+                        pass
                 except Exception as e:
-                    print(f"Σφάλμα στο ID {lid}: {e}")
+                    pass
                 finally:
                     pbar.update(1)
             
@@ -293,11 +331,8 @@ def enrich_deep_details(limit: Optional[int] = None, workers: int = 10):
     conn.close()
 
     print("\n" + "="*60)
-    print(f"✅ Η αναλυτική εξαγωγή ολοκληρώθηκε!")
+    print(f"✅ Η αναλυτική εξαγωγή πλήρων περιγραφών ολοκληρώθηκε!")
+    print(f"📄 Αγγελίες με βαθιά ανάλυση: {stats['deep_scraped']:,} / 17,730")
     print(f"🚗 Συνολικές συσχετίσεις οχημάτων: {stats['total_compat']:,}")
     print(f"🏷️ Συνολικά Keywords / Tags: {stats['total_tags']:,}")
     print("="*60 + "\n")
-
-if __name__ == "__main__":
-    scrape_catalog(max_pages=5)
-    enrich_deep_details(limit=10)

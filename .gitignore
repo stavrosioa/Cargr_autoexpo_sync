@@ -3,25 +3,28 @@ venv/
 env/
 .venv/
 
-# Python cache
+# Python cache & build
 __pycache__/
 *.py[cod]
 *$py.class
+*.egg-info/
+dist/
+build/
 
-# Large local per-listing directories and images
+# Data & Image storage (105 GB & 17,730 item json files)
 data/
 downloads/
+scratch/
 
-# Large SQLite Database and JSON exports (> 100MB exceeds GitHub hard limit)
+# Large database files & exports (exceeds GitHub 100MB file limit)
 database/*.db
 database/*.json
 database/*.db-journal
 database/*.db-wal
 database/*.db-shm
 
-# Explicitly track CSV export (contains all 17,730 listings, 43MB fits on GitHub)
-!database/autoexpo_parts.csv
-!database/.gitkeep
+# Optional: Large XML feeds (keep sample XML tracked)
+# database/cargr_parts_feed.xml
 
 # OS & Editor files
 .DS_Store
@@ -29,3 +32,4 @@ Thumbs.db
 desktop.ini
 .vscode/
 .idea/
+*.log
