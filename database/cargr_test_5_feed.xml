@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<cardealer>
+    <lastupdate>2026-08-19T17:54:19Z</lastupdate>
+    <classifieds>
+        <classified>
+            <unique_id>AUTOEXPO-TEST-001</unique_id>
+            <title>ΑΚΡΑ ΑΡΙΣΤΕΡΟ &amp; ΔΕΞΙ ΜΕ ΑΜΟΡΤΙΣΕΡ FORD PUMA 19--&gt; B7JB 1.0 ΒΕΝΖΙΝΗ - ΡΩΤΗΣΤΕ ΤΙΜΗ - ΑΠΟΣΤΟΛΗ ΣΕ ΟΛΗ ΤΗΝ ΕΛΛΑΔΑ</title>
+            <description>ΑΚΡΑ ΜΕ ΜΠΟΥΚΑΛΑ ΓΙΑ ΠΟΛΛΑ ΜΟΝΤΕΛΑ ΑΥΤΟΚΙΝΗΤΩΝ ΣΤΙΣ ΚΑΛΥΤΕΡΕΣ ΤΙΜΕΣ ΤΗΣ ΑΓΟΡΑΣ ΚΑΘΩΣ ΚΑΙ ΠΟΛΛΑ ΑΛΛΑ ΑΝΤΑΛΛΑΚΤΙΚΑ.</description>
+            <category_id>170</category_id>
+            <price>120.00</price>
+            <product_make>Ford</product_make>
+            <product_model>PUMA</product_model>
+            <makemodels>
+                <makemodel>
+                    <make>Ford</make>
+                    <model>PUMA</model>
+                    <yearfrom>2019</yearfrom>
+                </makemodel>
+            </makemodels>
+            <photos>
+                <photo>https://static.car.gr/344340392_0_b.jpg</photo>
+                <photo>https://static.car.gr/344340392_1_b.jpg</photo>
+                <photo>https://static.car.gr/344340392_2_b.jpg</photo>
+                <photo>https://static.car.gr/344340392_3_b.jpg</photo>
+                <photo>https://static.car.gr/344340392_4_b.jpg</photo>
+                <photo>https://static.car.gr/344340392_5_b.jpg</photo>
+            </photos>
+            <condition>used</condition>
+            <condition_type>Γνήσιο</condition_type>
+            <debatable>true</debatable>
+        </classified>
+        <classified>
+            <unique_id>AUTOEXPO-TEST-002</unique_id>
+            <title>ΗΜΙΑΞΟΝΙΑ ΕΜΠΡΟΣ ΑΡΙΣΤΕΡΟ &amp; ΔΕΞΙ FORD PUMA 19--&gt;B7JB 1.0 ΒΕΝΖΙΝΗ - ΡΩΤΗΣΤΕ ΤΙΜΗ - ΑΠΟΣΤΟΛΗ ΣΕ ΟΛΗ ΤΗΝ ΕΛΛΑΔΑ</title>
+            <description>ΑΚΡΑ ΜΕ ΜΠΟΥΚΑΛΕΣ, ΨΑΛΙΔΙΑ, ΗΜΙΑΞΟΝΙΑ, ΓΕΦΥΡΕΣ ΓΙΑ ΠΟΛΛΑ ΜΟΝΤΕΛΑ ΑΥΤΟΚΙΝΗΤΩΝ ΣΤΙΣ ΚΑΛΥΤΕΡΕΣ ΤΙΜΕΣ ΤΗΣ ΑΓΟΡΑΣ ΚΑΘΩΣ ΚΑΙ ΠΟΛΛΑ ΑΛΛΑ ΑΝΤΑΛΛΑΚΤΙΚΑ.</description>
+            <category_id>162</category_id>
+            <price>85.00</price>
+            <product_make>Ford</product_make>
+            <product_model>PUMA</product_model>
+            <makemodels>
+                <makemodel>
+                    <make>Ford</make>
+                    <model>PUMA</model>
+                    <yearfrom>2019</yearfrom>
+                </makemodel>
+            </makemodels>
+            <photos>
+                <photo>https://static.car.gr/344340353_0_b.jpg</photo>
+                <photo>https://static.car.gr/344340353_1_b.jpg</photo>
+                <photo>https://static.car.gr/344340353_2_b.jpg</photo>
+                <photo>https://static.car.gr/344340353_3_b.jpg</photo>
+                <photo>https://static.car.gr/344340353_4_b.jpg</photo>
+                <photo>https://static.car.gr/344340353_5_b.jpg</photo>
+            </photos>
+            <condition>used</condition>
+            <condition_type>Γνήσιο</condition_type>
+            <debatable>true</debatable>
+        </classified>
+        <classified>
+            <unique_id>AUTOEXPO-TEST-003</unique_id>
+            <title>ΨΑΛΙΔΙΑ ΕΜΠΡΟΣ ΑΡΙΣΤΕΡΟ &amp; ΔΕΞΙ FORD PUMA 19--&gt; - ΡΩΤΗΣΤΕ ΤΙΜΗ - ΑΠΟΣΤΟΛΗ ΣΕ ΟΛΗ ΤΗΝ ΕΛΛΑΔΑ</title>
+            <description>ΨΑΛΙΔΙΑ ΓΙΑ ΠΟΛΛΑ ΜΟΝΤΕΛΑ ΑΥΤΟΚΙΝΗΤΩΝ ΣΤΙΣ ΚΑΛΥΤΕΡΕΣ ΤΙΜΕΣ ΤΗΣ ΑΓΟΡΑΣ ΚΑΘΩΣ ΚΑΙ ΠΟΛΛΑ ΑΛΛΑ ΑΝΤΑΛΛΑΚΤΙΚΑ.</description>
+            <category_id>172</category_id>
+            <price>65.00</price>
+            <product_make>Ford</product_make>
+            <product_model>PUMA</product_model>
+            <makemodels>
+                <makemodel>
+                    <make>Ford</make>
+                    <model>PUMA</model>
+                    <yearfrom>2019</yearfrom>
+                </makemodel>
+            </makemodels>
+            <photos>
+                <photo>https://static.car.gr/344339749_1_b.jpg</photo>
+                <photo>https://static.car.gr/344339749_2_b.jpg</photo>
+                <photo>https://static.car.gr/344339749_0_b.jpg</photo>
+                <photo>https://static.car.gr/344339749_3_b.jpg</photo>
+                <photo>https://static.car.gr/344339749_4_b.jpg</photo>
+                <photo>https://static.car.gr/344339749_5_b.jpg</photo>
+            </photos>
+            <condition>used</condition>
+            <condition_type>Γνήσιο</condition_type>
+            <debatable>true</debatable>
+        </classified>
+        <classified>
+            <unique_id>AUTOEXPO-TEST-004</unique_id>
+            <title>ΚΡΕΜΑΓΙΕΡΑ FORD PUMA 19--&gt; B7JB 1.0 ΒΕΝΖΙΝΗ - ΡΩΤΗΣΤΕ ΤΙΜΗ - ΑΠΟΣΤΟΛΗ ΣΕ ΟΛΗ ΤΗΝ ΕΛΛΑΔΑ</title>
+            <description>ΚΡΕΜΑΓΙΕΡΕΣ ΓΙΑ ΠΟΛΛΑ ΜΟΝΤΕΛΑ ΑΥΤΟΚΙΝΗΤΩΝ ΣΤΙΣ ΚΑΛΥΤΕΡΕΣ ΤΙΜΕΣ ΤΗΣ ΑΓΟΡΑΣ ΚΑΘΩΣ ΚΑΙ ΠΟΛΛΑ ΑΛΛΑ ΑΝΤΑΛΛΑΚΤΙΚΑ.</description>
+            <category_id>168</category_id>
+            <price>190.00</price>
+            <product_make>Ford</product_make>
+            <product_model>PUMA</product_model>
+            <makemodels>
+                <makemodel>
+                    <make>Ford</make>
+                    <model>PUMA</model>
+                    <yearfrom>2019</yearfrom>
+                </makemodel>
+            </makemodels>
+            <photos>
+                <photo>https://static.car.gr/344339740_0_b.jpg</photo>
+                <photo>https://static.car.gr/344339740_1_b.jpg</photo>
+                <photo>https://static.car.gr/344339740_2_b.jpg</photo>
+                <photo>https://static.car.gr/344339740_3_b.jpg</photo>
+                <photo>https://static.car.gr/344339740_4_b.jpg</photo>
+                <photo>https://static.car.gr/344339740_5_b.jpg</photo>
+            </photos>
+            <condition>used</condition>
+            <condition_type>Γνήσιο</condition_type>
+            <debatable>true</debatable>
+        </classified>
+        <classified>
+            <unique_id>AUTOEXPO-TEST-005</unique_id>
+            <title>ΤΡΑΒΕΡΣΑ ΠΙΣΩ ΠΡΟΦΥΛΑΚΤΗΡΑ FORD PUMA 19--&gt; - ΡΩΤΗΣΤΕ ΤΙΜΗ - ΑΠΟΣΤΟΛΗ ΣΕ ΟΛΗ ΤΗΝ ΕΛΛΑΔΑ</title>
+            <description>ΤΡΑΒΕΡΣΑ ΠΙΣΩ ΠΡΟΦΥΛΑΚΤΗΡΑ ΓΙΑ ΠΟΛΛΑ ΜΟΝΤΕΛΑ ΑΥΤΟΚΙΝΗΤΩΝ ΣΤΙΣ ΚΑΛΥΤΕΡΕΣ ΤΙΜΕΣ ΤΗΣ ΑΓΟΡΑΣ ΚΑΘΩΣ ΚΑΙ ΠΟΛΛΑ ΑΛΛΑ ΑΝΤΑΛΛΑΚΤΙΚΑ.</description>
+            <category_id>1488</category_id>
+            <price>95.00</price>
+            <product_make>Ford</product_make>
+            <product_model>PUMA</product_model>
+            <makemodels>
+                <makemodel>
+                    <make>Ford</make>
+                    <model>PUMA</model>
+                    <yearfrom>2019</yearfrom>
+                </makemodel>
+            </makemodels>
+            <photos>
+                <photo>https://static.car.gr/344339733_0_b.jpg</photo>
+                <photo>https://static.car.gr/344339733_1_b.jpg</photo>
+                <photo>https://static.car.gr/344339733_2_b.jpg</photo>
+                <photo>https://static.car.gr/344339733_3_b.jpg</photo>
+                <photo>https://static.car.gr/344339733_4_b.jpg</photo>
+                <photo>https://static.car.gr/344339733_5_b.jpg</photo>
+            </photos>
+            <condition>used</condition>
+            <condition_type>Γνήσιο</condition_type>
+            <debatable>true</debatable>
+        </classified>
+    </classifieds>
+</cardealer>
