@@ -92,6 +92,9 @@ def main():
     view_p = subparsers.add_parser("viewer", help="Εκκίνηση Web Dashboard")
     view_p.add_argument("--port", type=int, default=8088, help="Θύρα web server (default: 8088)")
 
+    # Audit / Full Pipeline Validator command
+    subparsers.add_parser("audit", help="Εξονυχιστικός έλεγχος 20 σημείων: Βάση, Φωτογραφίες, XML Feed, Κατηγορίες, CSV")
+
     # Stats command
     subparsers.add_parser("stats", help="Προβολή στατιστικών")
 
@@ -146,6 +149,10 @@ def main():
 
     elif args.command == "viewer":
         run_server(port=args.port)
+
+    elif args.command == "audit":
+        from full_pipeline_validator import run_full_validation
+        run_full_validation()
 
     elif args.command == "stats":
         conn = get_connection()
