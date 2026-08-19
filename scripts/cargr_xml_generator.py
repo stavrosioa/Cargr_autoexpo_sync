@@ -270,6 +270,7 @@ def generate_cargr_xml(
             cond = "new"
         ET.SubElement(c_elem, "condition").text = cond
         ET.SubElement(c_elem, "condition_type").text = "Γνήσιο"
+        ET.SubElement(c_elem, "debatable").text = "false"
 
     conn.close()
 

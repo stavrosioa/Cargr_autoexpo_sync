@@ -117,7 +117,7 @@ def generate_test_feed():
         # 10. <condition> & <condition_type>
         ET.SubElement(c_elem, "condition").text = "used"
         ET.SubElement(c_elem, "condition_type").text = "Γνήσιο"
-        ET.SubElement(c_elem, "debatable").text = "true"
+        ET.SubElement(c_elem, "debatable").text = "false"
 
     conn.close()
 

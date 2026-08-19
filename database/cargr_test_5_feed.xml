@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <cardealer>
-    <lastupdate>2026-08-19T18:00:13Z</lastupdate>
+    <lastupdate>2026-08-19T18:03:48Z</lastupdate>
     <classifieds>
         <classified>
             <unique_id>AUTOEXPO-TEST-001</unique_id>
@@ -27,7 +27,7 @@
             </photos>
             <condition>used</condition>
             <condition_type>Γνήσιο</condition_type>
-            <debatable>true</debatable>
+            <debatable>false</debatable>
         </classified>
         <classified>
             <unique_id>AUTOEXPO-TEST-002</unique_id>
@@ -54,7 +54,7 @@
             </photos>
             <condition>used</condition>
             <condition_type>Γνήσιο</condition_type>
-            <debatable>true</debatable>
+            <debatable>false</debatable>
         </classified>
         <classified>
             <unique_id>AUTOEXPO-TEST-003</unique_id>
@@ -81,7 +81,7 @@
             </photos>
             <condition>used</condition>
             <condition_type>Γνήσιο</condition_type>
-            <debatable>true</debatable>
+            <debatable>false</debatable>
         </classified>
         <classified>
             <unique_id>AUTOEXPO-TEST-004</unique_id>
@@ -108,7 +108,7 @@
             </photos>
             <condition>used</condition>
             <condition_type>Γνήσιο</condition_type>
-            <debatable>true</debatable>
+            <debatable>false</debatable>
         </classified>
         <classified>
             <unique_id>AUTOEXPO-TEST-005</unique_id>
@@ -135,7 +135,7 @@
             </photos>
             <condition>used</condition>
             <condition_type>Γνήσιο</condition_type>
-            <debatable>true</debatable>
+            <debatable>false</debatable>
         </classified>
     </classifieds>
 </cardealer>
