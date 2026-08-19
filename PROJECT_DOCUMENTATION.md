@@ -17,62 +17,46 @@
 
 ---
 
-## 2. 🏗️ Αρχιτεκτονική & Δομή Συστήματος
+## 2. 🏗️ Συνολική Υβριδική Αρχιτεκτονική (Shop Server ➡️ Cloud Server ➡️ Car.gr)
 
-```
-Cargr_autoexpo_sync/
-├── database/
-│   ├── autoexpo_parts.db       # SQLite Single Source of Truth (213 MB)
-│   ├── autoexpo_parts.csv      # Πλήρης εξαγωγή σε Excel (41.7 MB)
-│   ├── autoexpo_parts.json     # Πλήρης εξαγωγή σε JSON (250 MB)
-│   ├── cargr_parts_feed.xml    # Επίσημο Car.gr XML Feed 17.730 αγγελιών (56.2 MB)
-│   └── cargr_test_5_feed.xml   # Δοκιμαστικό XML Feed 5 αγγελιών (8 KB)
-├── data/                       # Φάκελοι φωτογραφιών ανά αγγελία (105.65 GB)
-│   ├── 344340392/              # ID Αγγελίας
-│   │   ├── 0.jpg               # 1η φωτογραφία
-│   │   ├── 1.jpg               # 2η φωτογραφία
-│   │   └── ...
-├── scripts/
-│   ├── database.py             # SQLite Schema & Thread-safe queries
-│   ├── scraper.py              # Parallel catalog extraction & Rate-limit handling
-│   ├── reconstruct_descriptions.py # Smart auto-fill for truncated descriptions
-│   ├── image_downloader.py     # Asynchronous High-Res Image Downloader (40 workers)
-│   ├── category_mapper.py      # Official Car.gr 1,011 Car Categories Mapper
-│   ├── cargr_xml_generator.py  # Car.gr XML generator & schema validator
-│   ├── generate_test_feed.py   # Test XML generator (5 sample ads)
-│   ├── sync_diff.py            # Fast incremental sync & audit engine
-│   ├── full_pipeline_validator.py # 20-Point System Integrity Auditor
-│   ├── viewer_app.py           # Local Web Dashboard (FastAPI/HTML)
-│   └── exporter.py             # CSV / JSON multi-format exporter
-├── main.py                     # Κεντρικό CLI Interface (audit, export-xml, viewer, scrape, sync)
-├── part_xyma_categories.csv    # Official Car.gr Categories Reference
-├── requirements.txt            # Python Dependencies
-├── .gitignore                  # Production-ready Git exclusions
-└── PROJECT_DOCUMENTATION.md    # Πλήρης Τεχνική Τεκμηρίωση
+```mermaid
+graph LR
+    subgraph SHOP ["🏬 1. ΣΤΟ ΜΑΓΑΖΙ (server-magazi)"]
+        M["📸 Manager: Φωτογραφίζει (/mobile QR)"]
+        L["📝 Lister: Συμπληρώνει OEM &amp; Τιμή<br>🚀 ΠΑΤΑΕΙ 'ΑΝΕΒΑΣΜΑ ΣΤΟ CAR.GR'"]
+        DB1[("📦 ΒΑΣΗ 1: autoparts_db.sqlite<br>(Νέα Εισερχόμενα)")]
+        
+        M --> DB1
+        DB1 --> L
+    end
+
+    subgraph CLOUD ["☁️ 2. ΣΤΟ CLOUD SERVER (VPS 24/7)"]
+        DB2[("🌐 ΒΑΣΗ 2: autoexpo_parts.db<br>(Master 17.730 Αγγελίες)")]
+        IMG["📂 Cloud Storage (105 GB Φωτογραφίες)"]
+        XML["📄 cargr_parts_feed.xml (Ζωντανό Feed)"]
+        DASH["💻 CARGR ROLE DASHBOARD<br>(Τιμές, Πωλήσεις, Re-bump, Audit)"]
+        
+        DB2 --> XML
+        DB2 --> DASH
+    end
+
+    subgraph CARGR ["🚗 3. CAR.GR"]
+        BOT["🤖 Car.gr Ingest Worker"]
+    end
+
+    L -->|🛰️ Ασφαλές API Call| CLOUD
+    XML -->|https://app.autoexpo.gr/feeds/...| BOT
 ```
 
 ---
 
-## 3. 🔄 Κύκλος Ζωής Αγγελιών & Διαχείριση Συμβάντων (Lifecycle Rules)
+## 3. 👥 Οι 3 Ακριβείς Ρόλοι του Συστήματος
 
-### 🆕 Α. Όταν Καταχωρείται ΝΕΑ Αγγελία:
-1. **Από το Localhost Dashboard:**  
-   - Συμπληρώνονται στοιχεία & φωτογραφίες στο `http://localhost:8088`.
-   - Παράγεται αυτόματα το μοναδικό `unique_id` (π.χ. `AUTOEXPO-17731`).
-   - Δημοσιεύεται άμεσα στο Car.gr και αποθηκεύεται σε τοπικό δίσκο (`data/<id>/`), βάση SQLite, XML Feed και CSV.
-2. **Χειροκίνητα απευθείας στο Car.gr από εργαζόμενο:**  
-   - Ο εργαζόμενος γράφει στο πεδίο **«Εσωτερικός Κωδικός Καταστήματος»** τον κωδικό του ραφιού/barcode (π.χ. `EXP-1001` ή `AUTO-XXXXX`).  
-   *(Αν το ξεχάσει, ο Syncer θέτει αυτόματα ως unique_id τον αριθμό της αγγελίας).*
-   - Ο **Syncer / Watcher** εντοπίζει τη νέα αγγελία, κατεβάζει αυτόματα τις φωτογραφίες της στο `data/<id>/`, την καταχωρεί στη βάση SQLite και την προσθέτει στο `cargr_parts_feed.xml`.
-
----
-
-### 🔴 Β. Όταν ΔΙΑΓΡΑΦΕΤΑΙ / ΠΩΛΕΙΤΑΙ μία Αγγελία:
-1. **Από το Localhost Dashboard:**  
-   - Πατάτε **«Πουλήθηκε / Διαγραφή»**.
-   - Το σύστημα τη διαγράφει από το Car.gr και **την αφαιρεί αυτόματα από το `cargr_parts_feed.xml`** στο ίδιο δευτερόλεπτο.
-2. **Χειροκίνητα απευθείας από το Car.gr:**  
-   - Αν διαγραφεί από το Car.gr, ο **Syncer** εντοπίζει την απουσία της, τη μαρκάρει ως `is_active = 0` στη βάση δεδομένων και **την αφαιρεί άμεσα από το XML Feed** (ώστε να μην ξανανέβει κατά λάθος).
+| Ρόλος | Πού δουλεύει; | Τι κάνει στην εφαρμογή; |
+| :--- | :--- | :--- |
+| **1. `manager`** | **Στο Μαγαζί (`server-magazi`)** | • Φωτογραφίζει τα ανταλλακτικά (μέσω `/mobile` QR στο κινητό απευθείας στο ράφι).<br>• Οργανώνει τους φακέλους και τις φωτογραφίες στην τοπική Βάση 1 (`autoparts_db.sqlite`). |
+| **2. `lister`** | **Στο Μαγαζί (`server-magazi`)** | • Βλέπει τις φωτογραφίες που οργάνωσε ο Manager.<br>• Χρησιμοποιεί OCR για OEM κωδικούς, επιλέγει Μάρκα, Μοντέλο, Έτη, Τιμή.<br>• **Πατάει `[🚀 Ανέβασμα στο Car.gr]`**: Εγκρίνει και στέλνει τα στοιχεία στο Cloud! |
+| **3. `cargr`** | **Στον Cloud Server** | • **Το Κεντρικό Dashboard για το XML Feed (17.730+ αγγελίες)**.<br>• **`[✏️ Αλλαγή Τιμής]`**, **`[✅ Πουλήθηκε / Διαγραφή]`**, **`[⚡ Re-bump σε 1η Σελίδα]`**.<br>• Κέντρο Συγχρονισμού & **20-Point Audit Tool**. |
 
 ---
 
@@ -119,13 +103,13 @@ python main.py stats
 
 ## 6. 📅 Χρονοδιάγραμμα Υλοποίησης Επόμενης Φάσης (Estimated Roadmap)
 
-> **Εκτίμηση Χρόνου: 1 έως 2 Ημέρες Εργασίας Συνολικά**  
+> **Συνολική Εκτίμηση: 1 έως 2 Ημέρες Εργασίας Συνολικά**  
 *(Το 80% του δύσκολου έργου —βάση δεδομένων, 105 GB φωτογραφίες, XML generation, 20/20 audit— έχει ήδη ολοκληρωθεί).*
 
 | Φάση | Αντικείμενο Εργασίας | Εκτιμώμενος Χρόνος |
 | :--- | :--- | :---: |
-| **Φάση 1** | **Αυτόματος Bidirectional Syncer & Background Watcher:**<br>• Ανίχνευση νέων χειροκίνητων αγγελιών Car.gr<br>• Αυτόματο κατέβασμα νέων φωτογραφιών & καταχώρηση στο XML<br>• Δημιουργία `sync.bat` για συγχρονισμό με 1 διπλό κλικ | **Ημέρα 1** |
-| **Φάση 2** | **Ολοκλήρωση Localhost Management App (Web UI):**<br>• Φόρμα Προσθήκης Νέου Ανταλλακτικού (με Drag & Drop φωτογραφιών)<br>• Κουμπί «Πουλήθηκε / Διαγραφή» με αυτόματη ενημέρωση XML<br>• Direct Real-Time Car.gr Publishing module | **Ημέρα 2** |
+| **Φάση 1 (Μαγαζί)** | **Shop Server Ingest & Lister 1-Click Upload Engine:**<br>• Ενσωμάτωση του κουμπιού «🚀 Ανέβασμα στο Car.gr» στην οθόνη του Lister στο `Autoexpo_parts_manager`.<br>• Ασφαλής αποστολή δεδομένων και φωτογραφιών στο Cloud API. | **Ημέρα 1** |
+| **Φάση 2 (Cloud)** | **Cloud Server API & Car.gr XML Hub:**<br>• Υποδοχή νέων ανταλλακτικών στη Master Βάση (`autoexpo_parts.db`).<br>• Αυτόματη ανανέωση του `cargr_parts_feed.xml` στο δευτερόλεπτο.<br>• Dashboard ρόλου `cargr` (Τιμές, Πωλήσεις, Re-bump, 20/20 Audit). | **Ημέρα 2** |
 
 ---
 
