@@ -23,10 +23,11 @@ def normalize_text(text: str) -> str:
     return re.sub(r'\s+', ' ', text).strip()
 
 class CategoryMapper:
-    def __init__(self, csv_path: str = CSV_PATH):
+    def __init__(self, csv_path: str = CSV_PATH, car_only: bool = True):
         self.categories_by_id = {}
         self.categories_by_name = {}
         self.categories_by_path = {}
+        self.car_only = car_only
         self.load_categories(csv_path)
 
     def load_categories(self, csv_path: str):
@@ -37,9 +38,14 @@ class CategoryMapper:
         with open(csv_path, mode="r", encoding="utf-8", errors="ignore") as f:
             reader = csv.DictReader(f)
             for row in reader:
+                path = row["path"].strip()
+                
+                # Filter strictly for Car parts if car_only is True
+                if self.car_only and "αυτοκινητ" not in normalize_text(path):
+                    continue
+
                 cat_id = int(row["id"])
                 name = row["name"].strip()
-                path = row["path"].strip()
                 norm_name = normalize_text(name)
                 norm_path = normalize_text(path)
 
@@ -52,7 +58,7 @@ class CategoryMapper:
                 self.categories_by_name[norm_name] = cat_id
                 self.categories_by_path[norm_path] = cat_id
 
-        print(f"✅ Φορτώθηκαν {len(self.categories_by_id):,} επίσημες κατηγορίες Car.gr από το part_xyma_categories.csv!")
+        print(f"✅ Φορτώθηκαν {len(self.categories_by_id):,} επίσημες κατηγορίες ΑΥΤΟΚΙΝΗΤΩΝ Car.gr από το part_xyma_categories.csv!")
 
     def map_category(self, category_text: str, fallback_id: int = 170) -> int:
         if not category_text:
@@ -79,7 +85,7 @@ class CategoryMapper:
         return fallback_id
 
 if __name__ == "__main__":
-    mapper = CategoryMapper()
+    mapper = CategoryMapper(car_only=True)
     test_cases = [
         "Ανάρτηση & Τιμόνι » Αμορτισέρ",
         "Ανάρτηση & Τιμόνι » Ημιαξόνια",
@@ -90,8 +96,8 @@ if __name__ == "__main__":
         "Ψαλίδια",
         "Ζαντολάστιχα"
     ]
-    print("\n=== ΔΟΚΙΜΗ ΑΝΤΙΣΤΟΙΧΙΣΗΣ ΚΑΤΗΓΟΡΙΩΝ ===")
+    print("\n=== ΔΟΚΙΜΗ ΑΝΤΙΣΤΟΙΧΙΣΗΣ ΚΑΤΗΓΟΡΙΩΝ ΑΥΤΟΚΙΝΗΤΩΝ ===")
     for tc in test_cases:
         cid = mapper.map_category(tc)
         cat_info = mapper.categories_by_id.get(cid, {})
-        print(f"• \"{tc}\" -> Category ID: {cid} ({cat_info.get('name')})")
+        print(f"• \"{tc}\" -> Category ID: {cid} ({cat_info.get('name')}) | Path: {cat_info.get('path')}")
