@@ -15,6 +15,7 @@ if sys.platform == "win32":
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from database import get_connection, DB_PATH, DB_DIR
+from category_mapper import CategoryMapper
 
 MAKES = [
     ("ALFA ROMEO", "Alfa Romeo"), ("ASTON MARTIN", "Aston Martin"), ("AUDI", "Audi"),
@@ -165,6 +166,7 @@ def generate_cargr_xml(
 
     # Official Container: <classifieds>
     classifieds_elem = ET.SubElement(root, "classifieds")
+    cat_mapper = CategoryMapper()
 
     for idx, l in enumerate(listings):
         lid = l["id"]
@@ -202,20 +204,21 @@ def generate_cargr_xml(
         desc_text = clean_text(l["full_description"] or l["short_description"] or l["title"])[:6000]
         ET.SubElement(c_elem, "description").text = desc_text
 
-        # 5. <category_id> (Strictly 1 single leaf category integer ID)
+        # 5. <category_id> (Strictly 1 single leaf category integer ID from official Car.gr categories)
+        leaf_id = None
         cat_ids_str = l["category_ids"]
-        cat_ids = []
         if cat_ids_str:
             try:
                 cat_ids = json.loads(cat_ids_str)
+                if cat_ids:
+                    leaf_id = cat_ids[-1]
             except Exception:
                 pass
         
-        if cat_ids:
-            leaf_id = cat_ids[-1]
-            ET.SubElement(c_elem, "category_id").text = str(leaf_id)
-        else:
-            ET.SubElement(c_elem, "category_id").text = "20001"
+        if not leaf_id and cat_mapper:
+            leaf_id = cat_mapper.map_category(l["category"])
+        
+        ET.SubElement(c_elem, "category_id").text = str(leaf_id or 170)
 
         # 6. <price> (Decimal in €)
         raw_p = l["raw_price"]
