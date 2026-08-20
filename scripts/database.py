@@ -75,6 +75,13 @@ def init_db(db_path: str = DB_PATH):
         cursor.execute("ALTER TABLE listings ADD COLUMN last_verified_at DATETIME;")
     except Exception:
         pass
+    try:
+        # Car.gr's own <unique_id> for this row's XML entry — lets a fake
+        # dry-run test code (e.g. AUTOEXPO-TEST-001) round-trip back to the
+        # real row, since `id` itself must stay the real numeric listing id.
+        cursor.execute("ALTER TABLE listings ADD COLUMN unique_id TEXT;")
+    except Exception:
+        pass
 
     # 2. Compatible Vehicles Table
     cursor.execute("""
@@ -242,8 +249,8 @@ def save_listing(conn: sqlite3.Connection, item: Dict[str, Any], is_deep: bool =
         category = excluded.category,
         category_ids = excluded.category_ids,
         categories_json = CASE WHEN excluded.categories_json != '[]' THEN excluded.categories_json ELSE listings.categories_json END,
-        short_description = excluded.short_description,
-        full_description = excluded.full_description,
+        short_description = CASE WHEN excluded.short_description != '' THEN excluded.short_description ELSE listings.short_description END,
+        full_description = CASE WHEN excluded.full_description != '' THEN excluded.full_description ELSE listings.full_description END,
         condition = excluded.condition,
         part_numbers = CASE WHEN excluded.part_numbers != '' THEN excluded.part_numbers ELSE listings.part_numbers END,
         makes_models_summary = CASE WHEN excluded.makes_models_summary != '' THEN excluded.makes_models_summary ELSE listings.makes_models_summary END,

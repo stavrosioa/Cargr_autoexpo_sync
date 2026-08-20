@@ -7,7 +7,7 @@ if sys.platform == "win32":
     if sys.stdout and hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
 
-REPO_DIR = r"C:\Users\kioan\OneDrive\stauro poutana\Cargr_autoexpo_sync\Cargr_autoexpo_sync"
+REPO_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CSV_PATH = os.path.join(REPO_DIR, "part_xyma_categories.csv")
 
 def normalize_text(text: str) -> str:

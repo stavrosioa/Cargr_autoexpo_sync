@@ -12,7 +12,7 @@ if sys.platform == "win32":
     if sys.stderr and hasattr(sys.stderr, "reconfigure"):
         sys.stderr.reconfigure(encoding="utf-8")
 
-REPO_DIR = r"C:\Users\kioan\OneDrive\stauro poutana\Cargr_autoexpo_sync\Cargr_autoexpo_sync"
+REPO_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DB_PATH = os.path.join(REPO_DIR, "database", "autoexpo_parts.db")
 XML_PATH = os.path.join(REPO_DIR, "database", "cargr_parts_feed.xml")
 CSV_PATH = os.path.join(REPO_DIR, "database", "autoexpo_parts.csv")

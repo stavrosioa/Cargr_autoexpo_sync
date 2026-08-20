@@ -123,8 +123,9 @@ def generate_cargr_xml(
     cursor = conn.cursor()
 
     query = """
-    SELECT 
+    SELECT
         l.id,
+        l.unique_id,
         l.title,
         l.descriptive_title,
         l.price,
@@ -185,8 +186,10 @@ def generate_cargr_xml(
         # Node: <classified>
         c_elem = ET.SubElement(classifieds_elem, "classified")
 
-        # 1. <unique_id> (Max 100)
-        ET.SubElement(c_elem, "unique_id").text = str(lid)[:100]
+        # 1. <unique_id> (Max 100) — a synced dry-run row keeps its original
+        # XML code (e.g. AUTOEXPO-TEST-001) here instead of its real (and,
+        # for a fake-coded row, synthetic negative) DB id.
+        ET.SubElement(c_elem, "unique_id").text = str(l["unique_id"] or lid)[:100]
 
         # 2. <manufacturer_number> (Max 40) & <aftermarket_number> (Max 100)
         if l["part_numbers"]:

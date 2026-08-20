@@ -69,7 +69,7 @@ def main():
     enrich_p.add_argument("--cooldown", type=int, default=60, help="Αρχική αναμονή σε δευτερόλεπτα για καθαρή IP (default: 60)")
 
     # Download images command
-    img_p = subparsers.add_parser("download-images", help="Λήψη 100% όλων των φωτογραφιών μέγιστης ανάλυσης στο data/<id>/")
+    img_p = subparsers.add_parser("download-images", help="Λήψη 100%% όλων των φωτογραφιών μέγιστης ανάλυσης στο data/<id>/")
     img_p.add_argument("--limit", type=int, default=None, help="Μέγιστος αριθμός φωτογραφιών για λήψη")
     img_p.add_argument("--concurrency", type=int, default=40, help="Αριθμός ταυτόχρονων downloads (default: 40)")
     img_p.add_argument("--output", type=str, default=DATA_DIR, help="Φάκελος προορισμού (default: data/)")

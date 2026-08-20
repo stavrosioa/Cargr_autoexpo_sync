@@ -18,15 +18,21 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from database import init_db, get_connection, save_listing, mark_page_completed, DB_PATH, DB_DIR
 from scraper import fetch_page, extract_nuxt_data, BASE_URL, HEADERS
 
-def scan_live_catalog_ids(workers: int = 2) -> Dict[int, Dict[str, Any]]:
-    """Scan all live pages and collect listing IDs + titles + prices."""
+def scan_live_catalog_ids(workers: int = 2, progress_cb=None) -> Dict[int, Dict[str, Any]]:
+    """Scan all live pages and collect listing IDs + titles + prices.
+
+    progress_cb(done_pages, total_pages), if given, is called after every
+    page — lets a caller (e.g. a web dashboard) report live progress
+    instead of only seeing the tqdm bar in a terminal.
+    """
     print("🌐 Σάρωση ενεργού καταλόγου Car.gr για συλλογή όλων των live IDs...")
-    
+
     total_pages = 739
     pbar = tqdm(total=total_pages, desc="🔍 Έλεγχος Live Αγγελιών", unit="σελίδα")
-    
+    done_pages = 0
+
     live_items: Dict[int, Dict[str, Any]] = {}
-    
+
     def process_page(p: int) -> List[Dict[str, Any]]:
         return fetch_page(p)
 
@@ -52,7 +58,10 @@ def scan_live_catalog_ids(workers: int = 2) -> Dict[int, Dict[str, Any]]:
                 pass
             finally:
                 pbar.update(1)
-                
+                done_pages += 1
+                if progress_cb:
+                    progress_cb(done_pages, total_pages)
+
     pbar.close()
     return live_items
 
@@ -78,7 +87,8 @@ def run_sync_audit(
     fetch_missing: bool = False,
     mark_inactive: bool = False,
     export_csv: bool = True,
-    workers: int = 2
+    workers: int = 2,
+    progress_cb=None
 ):
     """Compare Live Car.gr vs Local DB and perform automated synchronization."""
     print("\n" + "=" * 75)
@@ -91,7 +101,7 @@ def run_sync_audit(
     print(f"📦 Αγγελίες στη Βάση Δεδομένων (SQLite): {len(db_ids):,}")
 
     # 2. Get Live Car.gr state
-    live_items = scan_live_catalog_ids(workers=workers)
+    live_items = scan_live_catalog_ids(workers=workers, progress_cb=progress_cb)
     live_ids = set(live_items.keys())
     
     if not live_ids:

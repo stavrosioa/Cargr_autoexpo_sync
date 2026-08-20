@@ -10,6 +10,7 @@ from typing import List, Dict, Any, Optional
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from curl_cffi import requests
 from tqdm import tqdm
+from bs4 import BeautifulSoup
 
 import shutil
 
